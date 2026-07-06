@@ -57,6 +57,9 @@ class MobilityButton(UnifiMobilityEntity, ButtonEntity):
         super().__init__(coordinator, entry)
         self.entity_description = description
         self._attr_unique_id = f"{self._identity}_{description.key}"
+        self._attr_suggested_object_id = (
+            f"{self._attr_suggested_object_id}_{description.key}"
+        )
 
     async def async_press(self) -> None:
         if self.entity_description.action == "reconnect":

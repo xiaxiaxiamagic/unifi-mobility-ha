@@ -218,6 +218,10 @@ UMR firmware versions expose slightly different JSON-RPC methods. Unsupported op
 
 Home Assistant will create a repair/reauthentication flow. Enter the new local portal password without deleting the integration.
 
+### Upgrading to v0.4.0
+
+The integration migrates only legacy entity IDs that match its old automatic numbered naming pattern. Manually renamed entity IDs are left unchanged. Entity registry entries, history, and automation references are preserved by Home Assistant's registry migration.
+
 ## Development
 
 ```bash

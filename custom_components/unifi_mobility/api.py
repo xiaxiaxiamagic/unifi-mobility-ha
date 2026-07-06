@@ -6,7 +6,13 @@ import asyncio
 from itertools import count
 from typing import Any
 
-from aiohttp import ClientError, ClientResponseError, ClientSession, ClientTimeout
+from aiohttp import (
+    ClientConnectorCertificateError,
+    ClientError,
+    ClientResponseError,
+    ClientSession,
+    ClientTimeout,
+)
 
 
 class UnifiMobilityError(Exception):
@@ -19,6 +25,10 @@ class UnifiMobilityAuthError(UnifiMobilityError):
 
 class UnifiMobilityConnectionError(UnifiMobilityError):
     """The device could not be reached."""
+
+
+class UnifiMobilitySslError(UnifiMobilityConnectionError):
+    """The device certificate could not be verified."""
 
 
 class UnifiMobilityRpcError(UnifiMobilityError):
@@ -49,6 +59,7 @@ class UnifiMobilityApi:
         self._login_lock = asyncio.Lock()
         self._timeout = ClientTimeout(total=12)
         self._request_ids = count(1)
+        self._request_semaphore = asyncio.Semaphore(3)
 
     async def async_login(self) -> None:
         """Create a local portal session."""
@@ -120,15 +131,18 @@ class UnifiMobilityApi:
         }
 
         try:
-            async with self._session.post(
-                f"{self._host}{path}",
-                json=payload,
-                headers=headers,
-                ssl=self._verify_ssl,
-                timeout=self._timeout,
-            ) as response:
-                response.raise_for_status()
-                body = await response.json(content_type=None)
+            async with self._request_semaphore:
+                async with self._session.post(
+                    f"{self._host}{path}",
+                    json=payload,
+                    headers=headers,
+                    ssl=self._verify_ssl,
+                    timeout=self._timeout,
+                ) as response:
+                    response.raise_for_status()
+                    body = await response.json(content_type=None)
+        except ClientConnectorCertificateError as err:
+            raise UnifiMobilitySslError(str(err)) from err
         except ClientResponseError as err:
             if err.status in (401, 403):
                 raise UnifiMobilityAuthError(str(err)) from err

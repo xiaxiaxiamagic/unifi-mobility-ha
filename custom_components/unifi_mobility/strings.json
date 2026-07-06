@@ -4,12 +4,16 @@
       "user": {"title": "Connect to UniFi Mobile Router", "description": "Enter the local UMR portal password. The username is always ui.", "data": {"host": "Host or IP address", "password": "Local portal password", "verify_ssl": "Verify SSL certificate"}},
       "reauth_confirm": {"title": "Reconnect UniFi Mobile Router", "description": "The router rejected the saved credentials.", "data": {"password": "New local portal password"}}
     },
-    "error": {"cannot_connect": "Unable to connect to the router", "invalid_auth": "Invalid local portal password", "unknown": "Unexpected error"},
+    "error": {"cannot_connect": "Unable to connect to the router", "invalid_auth": "Invalid local portal password", "invalid_ssl": "The router SSL certificate could not be verified", "unknown": "Unexpected error"},
     "abort": {"already_configured": "This router is already configured", "reauth_successful": "Authentication updated"}
   },
   "options": {
     "step": {"init": {"title": "UniFi Mobility options", "data": {"host": "Host or IP address", "password": "Local portal password", "verify_ssl": "Verify SSL certificate", "scan_interval": "Fast polling interval (seconds)", "slow_poll_multiplier": "Slow polling multiplier", "poll_clients": "Poll connected clients"}}},
-    "error": {"cannot_connect": "Unable to connect to the router", "invalid_auth": "Invalid local portal password"}
+    "error": {"cannot_connect": "Unable to connect to the router", "invalid_auth": "Invalid local portal password", "invalid_ssl": "The router SSL certificate could not be verified"}
+  },
+  "issues": {
+    "rpc_unavailable": {"title": "UMR firmware method unavailable", "description": "The local API method {method} has failed repeatedly. The router firmware may expose a different API shape. Other supported entities continue to work."},
+    "invalid_ssl": {"title": "UMR certificate verification failed", "description": "Home Assistant cannot verify the router certificate. Install a trusted certificate or disable SSL verification in the integration options."}
   },
   "entity": {
     "binary_sensor": {"connectivity": {"name": "Internet connectivity"}, "sim_present": {"name": "SIM present"}, "pin_locked": {"name": "SIM PIN locked"}, "activated": {"name": "Activated"}, "poe_passthrough": {"name": "PoE passthrough"}},

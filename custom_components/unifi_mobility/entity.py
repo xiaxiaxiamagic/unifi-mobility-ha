@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import slugify
 
 from .const import DOMAIN
 from .coordinator import UnifiMobilityCoordinator
@@ -35,3 +36,4 @@ class UnifiMobilityEntity(CoordinatorEntity[UnifiMobilityCoordinator]):
             ),
         )
         self._identity = str(identity)
+        self._attr_suggested_object_id = slugify(entry.title)

@@ -5,12 +5,14 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import timedelta
+from random import uniform
 from time import monotonic
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -18,6 +20,7 @@ from .api import (
     UnifiMobilityAuthError,
     UnifiMobilityConnectionError,
     UnifiMobilityError,
+    UnifiMobilitySslError,
 )
 from .const import (
     CONF_POLL_CLIENTS,
@@ -51,7 +54,10 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._cycle = 0
         self._cache: dict[str, Any] = {}
         self._section_updated: dict[str, float] = {}
+        self._method_failures: dict[str, int] = {}
+        self._failure_count = 0
         interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        self._base_interval = interval
         super().__init__(
             hass,
             logger=_LOGGER,
@@ -107,6 +113,8 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 result = await self.api.async_call(method, params)
                 if method == RPC_SHADOW and isinstance(result, dict):
                     result = result.get("data", result)
+                self._method_failures.pop(method, None)
+                ir.async_delete_issue(self.hass, DOMAIN, f"rpc_{method.lower()}")
                 return name, result, True
             except UnifiMobilityAuthError:
                 raise
@@ -115,6 +123,19 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except UnifiMobilityError as err:
                 # Firmware variants do not necessarily expose every dump method.
                 _LOGGER.debug("Optional UMR method %s failed: %s", method, err)
+                failures = self._method_failures.get(method, 0) + 1
+                self._method_failures[method] = failures
+                if failures >= 5:
+                    ir.async_create_issue(
+                        self.hass,
+                        DOMAIN,
+                        f"rpc_{method.lower()}",
+                        is_fixable=False,
+                        is_persistent=False,
+                        severity=ir.IssueSeverity.WARNING,
+                        translation_key="rpc_unavailable",
+                        translation_placeholders={"method": method},
+                    )
                 return name, {}, False
 
         try:
@@ -123,7 +144,21 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
         except UnifiMobilityAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
+        except UnifiMobilitySslError as err:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                "invalid_ssl",
+                is_fixable=False,
+                is_persistent=False,
+                severity=ir.IssueSeverity.ERROR,
+                translation_key="invalid_ssl",
+            )
+            raise UpdateFailed(str(err)) from err
         except UnifiMobilityError as err:
+            self._failure_count += 1
+            delay = min(self._base_interval * (2**self._failure_count), 900)
+            self.update_interval = timedelta(seconds=delay + uniform(0, delay * 0.1))
             raise UpdateFailed(str(err)) from err
 
         now = monotonic()
@@ -139,4 +174,9 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise UpdateFailed("The router returned no status data")
         self._cache = data
         self._cycle += 1
+        self._failure_count = 0
+        self.update_interval = timedelta(
+            seconds=self._base_interval + uniform(0, self._base_interval * 0.1)
+        )
+        ir.async_delete_issue(self.hass, DOMAIN, "invalid_ssl")
         return data

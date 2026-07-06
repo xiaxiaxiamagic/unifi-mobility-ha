@@ -1,13 +1,35 @@
 """Focused tests for the UMR JSON-RPC client."""
 
+import ssl
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from aiohttp import ClientConnectorCertificateError, ClientResponseError
 
 from custom_components.unifi_mobility.api import (
     UnifiMobilityApi,
     UnifiMobilityAuthError,
+    UnifiMobilitySslError,
 )
+
+
+class FakeResponse:
+    def __init__(self, body=None, error=None) -> None:
+        self.body = body
+        self.error = error
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *_args):
+        return None
+
+    def raise_for_status(self) -> None:
+        if self.error:
+            raise self.error
+
+    async def json(self, content_type=None):
+        return self.body
 
 
 @pytest.mark.asyncio
@@ -50,3 +72,37 @@ async def test_logout_clears_token_on_failure() -> None:
     api._request = AsyncMock(side_effect=UnifiMobilityAuthError("expired"))
     await api.async_logout()
     assert api._token is None
+
+
+@pytest.mark.asyncio
+async def test_request_adds_jsonrpc_id() -> None:
+    session = MagicMock()
+    session.post.return_value = FakeResponse({"result": {"ok": True}})
+    api = UnifiMobilityApi(session, "192.0.2.1", "secret")
+    assert await api._request("/rpc", "Status", {}, authenticated=False) == {"ok": True}
+    payload = session.post.call_args.kwargs["json"]
+    assert payload["jsonrpc"] == "2.0"
+    assert payload["id"] == 1
+
+
+@pytest.mark.asyncio
+async def test_http_401_is_auth_error() -> None:
+    session = MagicMock()
+    error = ClientResponseError(MagicMock(real_url="https://router"), (), status=401)
+    session.post.return_value = FakeResponse(error=error)
+    api = UnifiMobilityApi(session, "192.0.2.1", "secret")
+    with pytest.raises(UnifiMobilityAuthError):
+        await api._request("/rpc", "Status", {})
+
+
+@pytest.mark.asyncio
+async def test_certificate_error_is_classified() -> None:
+    session = MagicMock()
+    error = ClientConnectorCertificateError(
+        MagicMock(host="router", port=443, ssl=True),
+        ssl.SSLCertVerificationError("untrusted"),
+    )
+    session.post.return_value = FakeResponse(error=error)
+    api = UnifiMobilityApi(session, "192.0.2.1", "secret", verify_ssl=True)
+    with pytest.raises(UnifiMobilitySslError):
+        await api._request("/rpc", "Status", {})

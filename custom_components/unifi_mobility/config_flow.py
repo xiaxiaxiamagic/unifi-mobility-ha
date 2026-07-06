@@ -15,6 +15,7 @@ from .api import (
     UnifiMobilityAuthError,
     UnifiMobilityConnectionError,
     UnifiMobilityError,
+    UnifiMobilitySslError,
 )
 from .const import (
     CONF_POLL_CLIENTS,
@@ -33,7 +34,7 @@ from .const import (
 class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Configure a local UMR."""
 
-    VERSION = 1
+    VERSION = 2
 
     @staticmethod
     def async_get_options_flow(config_entry):
@@ -59,6 +60,8 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     device = {}
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
+            except UnifiMobilitySslError:
+                errors["base"] = "invalid_ssl"
             except UnifiMobilityConnectionError:
                 errors["base"] = "cannot_connect"
             except UnifiMobilityError:
@@ -114,6 +117,8 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await api.async_login()
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
+            except UnifiMobilitySslError:
+                errors["base"] = "invalid_ssl"
             except UnifiMobilityError:
                 errors["base"] = "cannot_connect"
             else:
@@ -162,6 +167,8 @@ class UnifiMobilityOptionsFlow(config_entries.OptionsFlow):
                 await api.async_login()
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
+            except UnifiMobilitySslError:
+                errors["base"] = "invalid_ssl"
             except UnifiMobilityError:
                 errors["base"] = "cannot_connect"
             else:

@@ -313,7 +313,13 @@ async def async_setup_entry(
 ) -> None:
     coordinator: UnifiMobilityCoordinator = entry.runtime_data
     async_add_entities(
-        MobilitySensor(coordinator, entry, description) for description in SENSORS
+        MobilitySensor(coordinator, entry, description)
+        for description in SENSORS
+        if (
+            description.section is None
+            or coordinator.section_available(description.section)
+        )
+        and description.value_fn(coordinator.data) is not None
     )
 
 
@@ -328,6 +334,9 @@ class MobilitySensor(UnifiMobilityEntity, SensorEntity):
         super().__init__(coordinator, entry)
         self.entity_description = description
         self._attr_unique_id = f"{self._identity}_{description.key}"
+        self._attr_suggested_object_id = (
+            f"{self._attr_suggested_object_id}_{description.key}"
+        )
 
     @property
     def native_value(self):

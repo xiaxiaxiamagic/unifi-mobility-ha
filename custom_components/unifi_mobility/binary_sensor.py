@@ -96,6 +96,8 @@ async def async_setup_entry(
     async_add_entities(
         MobilityBinarySensor(coordinator, entry, description)
         for description in BINARY_SENSORS
+        if coordinator.section_available(description.section)
+        and description.value_fn(coordinator.data) is not None
     )
 
 
@@ -108,6 +110,9 @@ class MobilityBinarySensor(UnifiMobilityEntity, BinarySensorEntity):
         super().__init__(coordinator, entry)
         self.entity_description = description
         self._attr_unique_id = f"{self._identity}_{description.key}"
+        self._attr_suggested_object_id = (
+            f"{self._attr_suggested_object_id}_{description.key}"
+        )
 
     @property
     def is_on(self) -> bool | None:

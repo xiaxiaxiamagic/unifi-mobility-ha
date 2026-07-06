@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
 import logging
+from datetime import timedelta
+from time import monotonic
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -19,17 +20,17 @@ from .api import (
     UnifiMobilityError,
 )
 from .const import (
-    DEFAULT_SCAN_INTERVAL,
-    DEFAULT_SLOW_POLL_MULTIPLIER,
-    DEFAULT_POLL_CLIENTS,
+    CONF_POLL_CLIENTS,
     CONF_SCAN_INTERVAL,
     CONF_SLOW_POLL_MULTIPLIER,
-    CONF_POLL_CLIENTS,
+    DEFAULT_POLL_CLIENTS,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SLOW_POLL_MULTIPLIER,
     DOMAIN,
     RPC_DEVICE_INFO,
     RPC_DEVICE_STATUS,
-    RPC_INFO_HIGH,
     RPC_INFO_CLIENT,
+    RPC_INFO_HIGH,
     RPC_INFO_LOW,
     RPC_INFO_MEDIUM,
     RPC_SHADOW,
@@ -49,6 +50,7 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.entry = entry
         self._cycle = 0
         self._cache: dict[str, Any] = {}
+        self._section_updated: dict[str, float] = {}
         interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         super().__init__(
             hass,
@@ -57,6 +59,24 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=interval),
         )
         self.api = api
+
+    def section_available(self, section: str) -> bool:
+        """Return whether a data section is present and recent enough."""
+        if section not in self._cache or section not in self._section_updated:
+            return False
+        interval = self.update_interval.total_seconds() if self.update_interval else 30
+        multiplier = self.entry.options.get(
+            CONF_SLOW_POLL_MULTIPLIER, DEFAULT_SLOW_POLL_MULTIPLIER
+        )
+        slow = section in {"device", "networks", "powers", "clients"}
+        max_age = interval * (multiplier * 2 + 1 if slow else 3)
+        return monotonic() - self._section_updated[section] <= max_age
+
+    async def async_reconnect(self) -> None:
+        """Safely replace the local read-only API session."""
+        await self.api.async_logout()
+        await self.api.async_login()
+        await self.async_request_refresh()
 
     async def _async_update_data(self) -> dict[str, Any]:
         fast_methods: dict[str, tuple[str, dict[str, Any]]] = {
@@ -81,13 +101,13 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         async def fetch(
             name: str, request: tuple[str, dict[str, Any]]
-        ) -> tuple[str, Any]:
+        ) -> tuple[str, Any, bool]:
             method, params = request
             try:
                 result = await self.api.async_call(method, params)
                 if method == RPC_SHADOW and isinstance(result, dict):
                     result = result.get("data", result)
-                return name, result
+                return name, result, True
             except UnifiMobilityAuthError:
                 raise
             except UnifiMobilityConnectionError:
@@ -95,7 +115,7 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except UnifiMobilityError as err:
                 # Firmware variants do not necessarily expose every dump method.
                 _LOGGER.debug("Optional UMR method %s failed: %s", method, err)
-                return name, {}
+                return name, {}, False
 
         try:
             results = await asyncio.gather(
@@ -106,7 +126,15 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except UnifiMobilityError as err:
             raise UpdateFailed(str(err)) from err
 
-        data = {**self._cache, **dict(results)}
+        now = monotonic()
+        updates: dict[str, Any] = {}
+        for name, result, succeeded in results:
+            if succeeded:
+                updates[name] = result
+                self._section_updated[name] = now
+            elif name not in self._cache:
+                updates[name] = {}
+        data = {**self._cache, **updates}
         if not any(data.values()):
             raise UpdateFailed("The router returned no status data")
         self._cache = data

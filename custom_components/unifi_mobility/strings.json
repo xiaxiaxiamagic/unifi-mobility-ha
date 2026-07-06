@@ -13,13 +13,15 @@
   },
   "entity": {
     "binary_sensor": {"connectivity": {"name": "Internet connectivity"}, "sim_present": {"name": "SIM present"}, "pin_locked": {"name": "SIM PIN locked"}, "activated": {"name": "Activated"}, "poe_passthrough": {"name": "PoE passthrough"}},
+    "button": {"refresh": {"name": "Refresh now"}, "reconnect": {"name": "Reconnect local session"}},
     "sensor": {
       "firmware": {"name": "Firmware"}, "operator": {"name": "Operator"}, "network_source": {"name": "Network source"}, "lte_band": {"name": "LTE band"},
       "rssi": {"name": "RSSI"}, "rsrp": {"name": "RSRP"}, "rsrq": {"name": "RSRQ"}, "signal_quality": {"name": "Signal quality", "state": {"excellent": "Excellent", "good": "Good", "fair": "Fair", "poor": "Poor", "no_signal": "No signal"}},
       "cpu": {"name": "CPU usage"}, "memory": {"name": "Memory usage"}, "data_usage": {"name": "Data usage"}, "uptime": {"name": "Uptime"},
       "wan_ip": {"name": "WAN IP address"}, "lan_ip": {"name": "LAN IP address"}, "wan_ipv6": {"name": "WAN IPv6 address"}, "client_count": {"name": "Connected clients"},
       "network_type": {"name": "Cellular network type"}, "iccid": {"name": "ICCID"}, "imei": {"name": "IMEI"}, "lte_model": {"name": "LTE modem"},
-      "rx_channel": {"name": "RX channel"}, "tx_channel": {"name": "TX channel"}, "data_limit": {"name": "Data limit"}, "billing_cycle_day": {"name": "Billing cycle day"}
+      "rx_channel": {"name": "RX channel"}, "tx_channel": {"name": "TX channel"}, "data_limit": {"name": "Data limit"}, "billing_cycle_day": {"name": "Billing cycle day"},
+      "data_remaining": {"name": "Data remaining"}, "data_usage_percent": {"name": "Data usage percentage"}, "days_until_billing": {"name": "Days until billing cycle"}
     }
   }
 }

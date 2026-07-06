@@ -18,6 +18,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import UnifiMobilityCoordinator
 from .entity import UnifiMobilityEntity
+from .parser import as_bool
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -29,7 +30,7 @@ class MobilityBinaryDescription(BinarySensorEntityDescription):
 def lte_value(data: dict[str, Any], key: str) -> bool | None:
     lte = data.get("status", {}).get("lte", {})
     value = lte.get(key) if isinstance(lte, dict) else None
-    return bool(value) if value is not None else None
+    return as_bool(value)
 
 
 BINARY_SENSORS = (
@@ -39,7 +40,7 @@ BINARY_SENSORS = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         section="status",
         value_fn=lambda d: (
-            bool(d["status"]["online"])
+            as_bool(d["status"]["online"])
             if d.get("status", {}).get("online") is not None
             else None
         ),
@@ -66,7 +67,7 @@ BINARY_SENSORS = (
         entity_category=EntityCategory.DIAGNOSTIC,
         section="status",
         value_fn=lambda d: (
-            bool(d["status"]["activated"])
+            as_bool(d["status"]["activated"])
             if d.get("status", {}).get("activated") is not None
             else None
         ),
@@ -78,7 +79,7 @@ BINARY_SENSORS = (
         entity_category=EntityCategory.DIAGNOSTIC,
         section="powers",
         value_fn=lambda d: (
-            bool(d["powers"]["poe"])
+            as_bool(d["powers"]["poe"])
             if d.get("powers", {}).get("poe") is not None
             else None
         ),
@@ -114,6 +115,6 @@ class MobilityBinarySensor(UnifiMobilityEntity, BinarySensorEntity):
 
     @property
     def available(self) -> bool:
-        return super().available and bool(
-            self.coordinator.data.get(self.entity_description.section)
+        return super().available and self.coordinator.section_available(
+            self.entity_description.section
         )

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+from itertools import count
 from typing import Any
 
-from aiohttp import ClientError, ClientSession, ClientTimeout
+from aiohttp import ClientError, ClientResponseError, ClientSession, ClientTimeout
 
 
 class UnifiMobilityError(Exception):
@@ -47,6 +48,7 @@ class UnifiMobilityApi:
         self._token: str | None = None
         self._login_lock = asyncio.Lock()
         self._timeout = ClientTimeout(total=12)
+        self._request_ids = count(1)
 
     async def async_login(self) -> None:
         """Create a local portal session."""
@@ -110,7 +112,12 @@ class UnifiMobilityApi:
         headers = {"Content-Type": "application/json; charset=utf-8"}
         if authenticated and self._token:
             headers["Authorization"] = f"Bearer {self._token}"
-        payload = {"jsonrpc": "2.0", "method": method, "params": params}
+        payload = {
+            "jsonrpc": "2.0",
+            "id": next(self._request_ids),
+            "method": method,
+            "params": params,
+        }
 
         try:
             async with self._session.post(
@@ -122,7 +129,11 @@ class UnifiMobilityApi:
             ) as response:
                 response.raise_for_status()
                 body = await response.json(content_type=None)
-        except (ClientError, asyncio.TimeoutError, ValueError) as err:
+        except ClientResponseError as err:
+            if err.status in (401, 403):
+                raise UnifiMobilityAuthError(str(err)) from err
+            raise UnifiMobilityConnectionError(str(err)) from err
+        except (TimeoutError, ClientError, ValueError) as err:
             raise UnifiMobilityConnectionError(str(err)) from err
 
         error = body.get("error") if isinstance(body, dict) else None

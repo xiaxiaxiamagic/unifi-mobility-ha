@@ -13,13 +13,15 @@
   },
   "entity": {
     "binary_sensor": {"connectivity": {"name": "互联网连接"}, "sim_present": {"name": "SIM 卡已插入"}, "pin_locked": {"name": "SIM PIN 已锁定"}, "activated": {"name": "设备已激活"}, "poe_passthrough": {"name": "PoE 透传"}},
+    "button": {"refresh": {"name": "立即刷新"}, "reconnect": {"name": "重新连接本地会话"}},
     "sensor": {
       "firmware": {"name": "固件版本"}, "operator": {"name": "运营商"}, "network_source": {"name": "网络来源"}, "lte_band": {"name": "LTE 频段"},
       "rssi": {"name": "RSSI"}, "rsrp": {"name": "RSRP"}, "rsrq": {"name": "RSRQ"}, "signal_quality": {"name": "信号质量", "state": {"excellent": "优秀", "good": "良好", "fair": "一般", "poor": "较差", "no_signal": "无信号"}},
       "cpu": {"name": "CPU 使用率"}, "memory": {"name": "内存使用率"}, "data_usage": {"name": "数据用量"}, "uptime": {"name": "运行时间"},
       "wan_ip": {"name": "WAN IP 地址"}, "lan_ip": {"name": "LAN IP 地址"}, "wan_ipv6": {"name": "WAN IPv6 地址"}, "client_count": {"name": "已连接客户端"},
       "network_type": {"name": "蜂窝网络制式"}, "iccid": {"name": "ICCID"}, "imei": {"name": "IMEI"}, "lte_model": {"name": "LTE 调制解调器"},
-      "rx_channel": {"name": "下行信道"}, "tx_channel": {"name": "上行信道"}, "data_limit": {"name": "流量上限"}, "billing_cycle_day": {"name": "流量结算日"}
+      "rx_channel": {"name": "下行信道"}, "tx_channel": {"name": "上行信道"}, "data_limit": {"name": "流量上限"}, "billing_cycle_day": {"name": "流量结算日"},
+      "data_remaining": {"name": "剩余流量"}, "data_usage_percent": {"name": "流量使用率"}, "days_until_billing": {"name": "距离结算日"}
     }
   }
 }

@@ -24,6 +24,16 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import UnifiMobilityCoordinator
 from .entity import UnifiMobilityEntity
+from .parser import (
+    as_int,
+    data_limit,
+    data_remaining,
+    data_usage,
+    data_usage_percent,
+    days_until_billing,
+    first,
+    nested,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -125,7 +135,7 @@ SENSORS = (
         native_unit_of_measurement=UnitOfInformation.BYTES,
         state_class=SensorStateClass.TOTAL,
         section="medium",
-        value_fn=path("medium", "total_usage"),
+        value_fn=data_usage,
     ),
     MobilitySensorDescription(
         key="uptime",
@@ -134,8 +144,9 @@ SENSORS = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda d: d.get("device", {}).get("uptime")
-        or d.get("low", {}).get("uptime"),
+        value_fn=lambda d: (
+            d.get("device", {}).get("uptime") or d.get("low", {}).get("uptime")
+        ),
     ),
     MobilitySensorDescription(
         key="wan_ip",
@@ -176,7 +187,7 @@ SENSORS = (
         translation_key="network_type",
         icon="mdi:network-strength-4-cog",
         section="status",
-        value_fn=lambda d: first_value(
+        value_fn=lambda d: first(
             d.get("status", {}).get("lte", {}),
             "network_type",
             "rat",
@@ -232,7 +243,7 @@ SENSORS = (
         device_class=SensorDeviceClass.DATA_SIZE,
         native_unit_of_measurement=UnitOfInformation.BYTES,
         section="networks",
-        value_fn=lambda d: nested(d, "networks", "data_usage", "limit"),
+        value_fn=data_limit,
     ),
     MobilitySensorDescription(
         key="billing_cycle_day",
@@ -249,22 +260,31 @@ SENSORS = (
         section="device",
         value_fn=path("device", "wan_ipv6"),
     ),
+    MobilitySensorDescription(
+        key="data_remaining",
+        translation_key="data_remaining",
+        device_class=SensorDeviceClass.DATA_SIZE,
+        native_unit_of_measurement=UnitOfInformation.BYTES,
+        section="networks",
+        value_fn=data_remaining,
+    ),
+    MobilitySensorDescription(
+        key="data_usage_percent",
+        translation_key="data_usage_percent",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        section="networks",
+        value_fn=data_usage_percent,
+    ),
+    MobilitySensorDescription(
+        key="days_until_billing",
+        translation_key="days_until_billing",
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        icon="mdi:calendar-clock",
+        section="networks",
+        value_fn=days_until_billing,
+    ),
 )
-
-
-def first_value(data: Any, *keys: str) -> Any:
-    if not isinstance(data, dict):
-        return None
-    return next((data[key] for key in keys if data.get(key) is not None), None)
-
-
-def nested(data: dict[str, Any], section: str, *keys: str) -> Any:
-    value: Any = data.get(section, {})
-    for key in keys:
-        if not isinstance(value, dict):
-            return None
-        value = value.get(key)
-    return value
 
 
 def signal_quality(value: Any) -> str:
@@ -307,16 +327,17 @@ class MobilitySensor(UnifiMobilityEntity, SensorEntity):
     @property
     def native_value(self):
         value = self.entity_description.value_fn(self.coordinator.data)
-        if self.entity_description.key == "data_usage" and value is not None:
-            try:
-                return int(float(value))
-            except (TypeError, ValueError):
-                return None
+        if self.entity_description.key in {
+            "data_usage",
+            "data_limit",
+            "data_remaining",
+        }:
+            return as_int(value)
         return value
 
     @property
     def available(self) -> bool:
         section = self.entity_description.section
         return super().available and (
-            section is None or bool(self.coordinator.data.get(section))
+            section is None or self.coordinator.section_available(section)
         )

@@ -26,6 +26,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_config_entry_first_refresh()
     except UnifiMobilityConnectionError as err:
         raise ConfigEntryNotReady from err
+    device = coordinator.data.get("device", {})
+    stable_id = device.get("mac") or device.get("imei")
+    host_identity = entry.data[CONF_HOST].strip().rstrip("/").lower()
+    if stable_id and (
+        entry.unique_id is None or entry.unique_id.lower() == host_identity
+    ):
+        hass.config_entries.async_update_entry(entry, unique_id=str(stable_id).lower())
     entry.runtime_data = coordinator
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

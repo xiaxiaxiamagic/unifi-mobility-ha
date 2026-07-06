@@ -15,6 +15,8 @@
 - 本地轮询，并自动续期登录会话
 - 本地门户密码变更后支持 Home Assistant 重新认证
 - 快速与慢速分组轮询，降低路由器负载
+- 提供立即刷新与重新连接本地会话的安全诊断按钮
+- 提供剩余流量、流量使用率及距离结算日传感器
 - 中文和英文配置界面
 - Home Assistant 2026.3+ 本地图标资源
 - 诊断信息自动隐藏凭据和设备标识符
@@ -105,6 +107,8 @@ It communicates directly with the **UMR Local Portal JSON-RPC API**. No Mobility
 - Chinese and English user interfaces
 - Local brand assets for Home Assistant 2026.3+
 - Redacted diagnostics with credentials and device identifiers removed
+- Safe diagnostic buttons for immediate refresh and local-session reconnection
+- Data remaining, usage percentage, and billing-cycle countdown sensors
 - HACS-compatible repository structure
 
 ## Available entities

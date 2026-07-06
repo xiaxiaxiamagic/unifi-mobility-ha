@@ -20,7 +20,7 @@ class UnifiMobilityEntity(CoordinatorEntity[UnifiMobilityCoordinator]):
     ) -> None:
         super().__init__(coordinator)
         device = coordinator.data.get("device", {})
-        identity = device.get("mac") or device.get("imei") or entry.unique_id
+        identity = entry.unique_id or device.get("mac") or device.get("imei")
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(identity))},
             name=entry.title,

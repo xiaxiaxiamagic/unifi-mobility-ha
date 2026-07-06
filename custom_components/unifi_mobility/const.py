@@ -1,7 +1,7 @@
 """Constants for the UniFi Mobility integration."""
 
 DOMAIN = "unifi_mobility"
-PLATFORMS = ["binary_sensor", "sensor"]
+PLATFORMS = ["binary_sensor", "button", "sensor"]
 
 CONF_VERIFY_SSL = "verify_ssl"
 CONF_SCAN_INTERVAL = "scan_interval"

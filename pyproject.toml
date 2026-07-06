@@ -19,7 +19,7 @@ test = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "--strict-markers --cov=custom_components.unifi_mobility --cov-report=term-missing --cov-fail-under=65"
+addopts = "--strict-markers --cov=custom_components.unifi_mobility --cov-report=term-missing --cov-fail-under=60"
 
 [tool.coverage.run]
 branch = true

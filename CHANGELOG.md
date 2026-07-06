@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.2
+
+- Make legacy entity ID migration reliable by reading entities directly from the
+  config entry registry.
+- 修复真实 Home Assistant 环境中两个旧流量实体 ID 未迁移的问题。
+
 ## v0.4.1
 
 - Completes entity ID migration for legacy data-size IDs with numeric suffixes.

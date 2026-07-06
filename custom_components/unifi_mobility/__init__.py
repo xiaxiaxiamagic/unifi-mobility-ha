@@ -52,19 +52,26 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     legacy_pattern = re.compile(
         rf"^{re.escape(base)}(?:_\d+|_(?:data_size|duration|plug|lock|power)(?:_\d+)?)?$"
     )
+    entries_by_unique_id = {
+        registry_entry.unique_id: registry_entry
+        for registry_entry in er.async_entries_for_config_entry(
+            registry, entry.entry_id
+        )
+        if registry_entry.platform == DOMAIN
+    }
     for platform, keys in ENTITY_KEYS.items():
         for key in keys:
-            unique_id = f"{entry.unique_id}_{key}"
-            entity_id = registry.async_get_entity_id(platform, DOMAIN, unique_id)
-            if entity_id is None:
+            registry_entry = entries_by_unique_id.get(f"{entry.unique_id}_{key}")
+            if registry_entry is None:
                 continue
+            entity_id = registry_entry.entity_id
             object_id = entity_id.split(".", 1)[1]
             if legacy_pattern.fullmatch(object_id):
                 desired_id = f"{platform}.{base}_{key}"
                 if registry.async_get(desired_id) is not None:
                     continue
                 registry.async_update_entity(entity_id, new_entity_id=desired_id)
-    hass.config_entries.async_update_entry(entry, version=3)
+    hass.config_entries.async_update_entry(entry, version=4)
     return True
 
 

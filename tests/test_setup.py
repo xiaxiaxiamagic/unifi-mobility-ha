@@ -55,21 +55,35 @@ async def test_false_binary_value_is_still_created() -> None:
 @pytest.mark.asyncio
 async def test_migration_renames_only_generated_ids() -> None:
     registry = MagicMock()
-
-    def get_entity_id(_platform, _domain, unique_id):
-        if unique_id.endswith("_firmware"):
-            return "sensor.umr_industrial_eu"
-        if unique_id.endswith("_operator"):
-            return "sensor.my_custom_operator"
-        if unique_id.endswith("_data_limit"):
-            return "sensor.umr_industrial_eu_data_size_2"
-        return None
-
-    registry.async_get_entity_id.side_effect = get_entity_id
     registry.async_get.return_value = None
     hass = SimpleNamespace(config_entries=MagicMock())
-    entry = SimpleNamespace(version=1, unique_id="device", title="UMR Industrial EU")
-    with patch("custom_components.unifi_mobility.er.async_get", return_value=registry):
+    entry = SimpleNamespace(
+        entry_id="entry", version=1, unique_id="device", title="UMR Industrial EU"
+    )
+    registry_entries = [
+        SimpleNamespace(
+            platform="unifi_mobility",
+            unique_id="device_firmware",
+            entity_id="sensor.umr_industrial_eu",
+        ),
+        SimpleNamespace(
+            platform="unifi_mobility",
+            unique_id="device_operator",
+            entity_id="sensor.my_custom_operator",
+        ),
+        SimpleNamespace(
+            platform="unifi_mobility",
+            unique_id="device_data_limit",
+            entity_id="sensor.umr_industrial_eu_data_size_2",
+        ),
+    ]
+    with (
+        patch("custom_components.unifi_mobility.er.async_get", return_value=registry),
+        patch(
+            "custom_components.unifi_mobility.er.async_entries_for_config_entry",
+            return_value=registry_entries,
+        ),
+    ):
         assert await async_migrate_entry(hass, entry)
     assert registry.async_update_entity.call_count == 2
     registry.async_update_entity.assert_any_call(
@@ -80,4 +94,4 @@ async def test_migration_renames_only_generated_ids() -> None:
         "sensor.umr_industrial_eu_data_size_2",
         new_entity_id="sensor.umr_industrial_eu_data_limit",
     )
-    hass.config_entries.async_update_entry.assert_called_once_with(entry, version=3)
+    hass.config_entries.async_update_entry.assert_called_once_with(entry, version=4)

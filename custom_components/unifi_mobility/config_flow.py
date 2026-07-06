@@ -34,7 +34,7 @@ from .const import (
 class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Configure a local UMR."""
 
-    VERSION = 3
+    VERSION = 4
 
     @staticmethod
     def async_get_options_flow(config_entry):

@@ -61,6 +61,8 @@ async def test_migration_renames_only_generated_ids() -> None:
             return "sensor.umr_industrial_eu"
         if unique_id.endswith("_operator"):
             return "sensor.my_custom_operator"
+        if unique_id.endswith("_data_limit"):
+            return "sensor.umr_industrial_eu_data_size_2"
         return None
 
     registry.async_get_entity_id.side_effect = get_entity_id
@@ -69,8 +71,13 @@ async def test_migration_renames_only_generated_ids() -> None:
     entry = SimpleNamespace(version=1, unique_id="device", title="UMR Industrial EU")
     with patch("custom_components.unifi_mobility.er.async_get", return_value=registry):
         assert await async_migrate_entry(hass, entry)
-    registry.async_update_entity.assert_called_once_with(
+    assert registry.async_update_entity.call_count == 2
+    registry.async_update_entity.assert_any_call(
         "sensor.umr_industrial_eu",
         new_entity_id="sensor.umr_industrial_eu_firmware",
     )
-    hass.config_entries.async_update_entry.assert_called_once_with(entry, version=2)
+    registry.async_update_entity.assert_any_call(
+        "sensor.umr_industrial_eu_data_size_2",
+        new_entity_id="sensor.umr_industrial_eu_data_limit",
+    )
+    hass.config_entries.async_update_entry.assert_called_once_with(entry, version=3)

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1
+
+- Completes entity ID migration for legacy data-size IDs with numeric suffixes.
+
 ## v0.4.0
 
 - Migrates automatically generated numbered entity IDs to stable readable IDs.

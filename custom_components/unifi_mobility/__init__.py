@@ -45,12 +45,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrate only automatically generated legacy entity IDs."""
-    if entry.version >= 2:
+    if entry.version >= 3:
         return True
     registry = er.async_get(hass)
     base = slugify(entry.title)
     legacy_pattern = re.compile(
-        rf"^{re.escape(base)}(?:_\d+|_(?:data_size|duration|plug|lock|power))?$"
+        rf"^{re.escape(base)}(?:_\d+|_(?:data_size|duration|plug|lock|power)(?:_\d+)?)?$"
     )
     for platform, keys in ENTITY_KEYS.items():
         for key in keys:
@@ -64,7 +64,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if registry.async_get(desired_id) is not None:
                     continue
                 registry.async_update_entity(entity_id, new_entity_id=desired_id)
-    hass.config_entries.async_update_entry(entry, version=2)
+    hass.config_entries.async_update_entry(entry, version=3)
     return True
 
 

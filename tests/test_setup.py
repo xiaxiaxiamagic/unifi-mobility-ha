@@ -27,7 +27,12 @@ class FakeCoordinator:
 @pytest.mark.asyncio
 async def test_sensor_setup_uses_detected_capabilities() -> None:
     coordinator = FakeCoordinator({"low": {"fw": "1.2.3"}}, {"low"})
-    entry = SimpleNamespace(runtime_data=coordinator, unique_id="device", title="UMR")
+    entry = SimpleNamespace(
+        runtime_data=coordinator,
+        unique_id="device",
+        title="UMR",
+        data={"host": "192.0.2.1"},
+    )
     added = []
     await setup_sensors(None, entry, lambda entities: added.extend(entities))
     assert [entity.entity_description.key for entity in added] == ["firmware"]
@@ -36,7 +41,12 @@ async def test_sensor_setup_uses_detected_capabilities() -> None:
 @pytest.mark.asyncio
 async def test_false_binary_value_is_still_created() -> None:
     coordinator = FakeCoordinator({"status": {"online": False}}, {"status"})
-    entry = SimpleNamespace(runtime_data=coordinator, unique_id="device", title="UMR")
+    entry = SimpleNamespace(
+        runtime_data=coordinator,
+        unique_id="device",
+        title="UMR",
+        data={"host": "192.0.2.1"},
+    )
     added = []
     await setup_binary(None, entry, lambda entities: added.extend(entities))
     assert [entity.entity_description.key for entity in added] == ["connectivity"]

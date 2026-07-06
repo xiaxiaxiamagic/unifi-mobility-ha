@@ -1,11 +1,13 @@
 """Tests for firmware-tolerant value parsing."""
 
 from datetime import date
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from custom_components.unifi_mobility.parser import (
     as_bool,
+    billing_date,
     data_remaining,
     data_usage_percent,
     days_until_billing,
@@ -54,3 +56,10 @@ def test_days_until_billing_day() -> None:
 def test_days_until_iso_billing_date() -> None:
     data = {"networks": {"data_usage": {"billing_cycle_date": "2026-07-20"}}}
     assert days_until_billing(data, date(2026, 7, 10)) == 10
+
+
+def test_unix_billing_timestamp_uses_local_date() -> None:
+    data = {"networks": {"data_usage": {"billing_cycle_date": 1785513600}}}
+    timezone = ZoneInfo("Asia/Shanghai")
+    assert billing_date(data, date(2026, 7, 6), timezone) == date(2026, 8, 1)
+    assert days_until_billing(data, date(2026, 7, 6), timezone) == 26

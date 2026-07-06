@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime, tzinfo
 from typing import Any
 
 
@@ -69,19 +69,30 @@ def data_usage_percent(data: dict[str, Any]) -> float | None:
     return round(min(used / limit * 100, 100), 1)
 
 
-def days_until_billing(data: dict[str, Any], today: date | None = None) -> int | None:
-    """Calculate days until a day-of-month or ISO billing date."""
+def billing_date(
+    data: dict[str, Any],
+    today: date | None = None,
+    timezone: tzinfo | None = None,
+) -> date | None:
+    """Convert epoch, ISO, or day-of-month billing values to a date."""
     raw = nested(data, "networks", "data_usage", "billing_cycle_date")
     if raw is None:
         return None
     today = today or date.today()
     if isinstance(raw, str) and "-" in raw:
         try:
-            target = datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
-            return max((target - today).days, 0)
+            return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
         except ValueError:
             return None
-    day = as_int(raw)
+    numeric = as_int(raw)
+    if numeric is None:
+        return None
+    if numeric > 31:
+        try:
+            return datetime.fromtimestamp(numeric, UTC).astimezone(timezone).date()
+        except (OverflowError, OSError, ValueError):
+            return None
+    day = numeric
     if day is None or not 1 <= day <= 31:
         return None
     for month_offset in (0, 1):
@@ -93,5 +104,16 @@ def days_until_billing(data: dict[str, Any], today: date | None = None) -> int |
         except ValueError:
             continue
         if target >= today:
-            return (target - today).days
+            return target
     return None
+
+
+def days_until_billing(
+    data: dict[str, Any],
+    today: date | None = None,
+    timezone: tzinfo | None = None,
+) -> int | None:
+    """Calculate calendar days until the next billing date."""
+    today = today or date.today()
+    target = billing_date(data, today, timezone)
+    return max((target - today).days, 0) if target else None

@@ -21,18 +21,19 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .coordinator import UnifiMobilityCoordinator
 from .entity import UnifiMobilityEntity
 from .parser import (
     as_int,
+    billing_date,
     data_limit,
     data_remaining,
     data_usage,
     data_usage_percent,
     days_until_billing,
     first,
-    nested,
 )
 
 
@@ -248,9 +249,11 @@ SENSORS = (
     MobilitySensorDescription(
         key="billing_cycle_day",
         translation_key="billing_cycle_day",
-        icon="mdi:calendar-refresh",
+        device_class=SensorDeviceClass.DATE,
         section="networks",
-        value_fn=lambda d: nested(d, "networks", "data_usage", "billing_cycle_date"),
+        value_fn=lambda d: billing_date(
+            d, dt_util.now().date(), dt_util.DEFAULT_TIME_ZONE
+        ),
     ),
     MobilitySensorDescription(
         key="wan_ipv6",
@@ -282,7 +285,9 @@ SENSORS = (
         native_unit_of_measurement=UnitOfTime.DAYS,
         icon="mdi:calendar-clock",
         section="networks",
-        value_fn=days_until_billing,
+        value_fn=lambda d: days_until_billing(
+            d, dt_util.now().date(), dt_util.DEFAULT_TIME_ZONE
+        ),
     ),
 )
 

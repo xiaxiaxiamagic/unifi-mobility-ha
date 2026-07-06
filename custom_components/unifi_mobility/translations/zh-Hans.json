@@ -20,7 +20,7 @@
       "cpu": {"name": "CPU 使用率"}, "memory": {"name": "内存使用率"}, "data_usage": {"name": "数据用量"}, "uptime": {"name": "运行时间"},
       "wan_ip": {"name": "WAN IP 地址"}, "lan_ip": {"name": "LAN IP 地址"}, "wan_ipv6": {"name": "WAN IPv6 地址"}, "client_count": {"name": "已连接客户端"},
       "network_type": {"name": "蜂窝网络制式"}, "iccid": {"name": "ICCID"}, "imei": {"name": "IMEI"}, "lte_model": {"name": "LTE 调制解调器"},
-      "rx_channel": {"name": "下行信道"}, "tx_channel": {"name": "上行信道"}, "data_limit": {"name": "流量上限"}, "billing_cycle_day": {"name": "流量结算日"},
+      "rx_channel": {"name": "下行信道"}, "tx_channel": {"name": "上行信道"}, "data_limit": {"name": "流量上限"}, "billing_cycle_day": {"name": "下次流量结算日"},
       "data_remaining": {"name": "剩余流量"}, "data_usage_percent": {"name": "流量使用率"}, "days_until_billing": {"name": "距离结算日"}
     }
   }

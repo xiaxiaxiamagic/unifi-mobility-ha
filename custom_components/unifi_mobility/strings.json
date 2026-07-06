@@ -20,7 +20,7 @@
       "cpu": {"name": "CPU usage"}, "memory": {"name": "Memory usage"}, "data_usage": {"name": "Data usage"}, "uptime": {"name": "Uptime"},
       "wan_ip": {"name": "WAN IP address"}, "lan_ip": {"name": "LAN IP address"}, "wan_ipv6": {"name": "WAN IPv6 address"}, "client_count": {"name": "Connected clients"},
       "network_type": {"name": "Cellular network type"}, "iccid": {"name": "ICCID"}, "imei": {"name": "IMEI"}, "lte_model": {"name": "LTE modem"},
-      "rx_channel": {"name": "RX channel"}, "tx_channel": {"name": "TX channel"}, "data_limit": {"name": "Data limit"}, "billing_cycle_day": {"name": "Billing cycle day"},
+      "rx_channel": {"name": "RX channel"}, "tx_channel": {"name": "TX channel"}, "data_limit": {"name": "Data limit"}, "billing_cycle_day": {"name": "Next billing date"},
       "data_remaining": {"name": "Data remaining"}, "data_usage_percent": {"name": "Data usage percentage"}, "days_until_billing": {"name": "Days until billing cycle"}
     }
   }

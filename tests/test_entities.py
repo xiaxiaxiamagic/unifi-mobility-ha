@@ -28,11 +28,11 @@ def test_signal_quality(rsrp, expected) -> None:
 def test_section_availability(monkeypatch) -> None:
     coordinator = object.__new__(UnifiMobilityCoordinator)
     coordinator._cache = {"low": {}, "device": {}}
-    coordinator._section_updated = {"low": 90.0, "device": 10.0}
+    coordinator._section_updated = {"low": 290.0, "device": 10.0}
     coordinator.entry = SimpleNamespace(options={})
     coordinator._update_interval = timedelta(seconds=10)
     monkeypatch.setattr(
-        "custom_components.unifi_mobility.coordinator.monotonic", lambda: 100.0
+        "custom_components.unifi_mobility.coordinator.monotonic", lambda: 300.0
     )
     assert coordinator.section_available("low")
     assert not coordinator.section_available("device")

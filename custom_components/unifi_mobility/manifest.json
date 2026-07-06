@@ -1,10 +1,12 @@
 {
   "domain": "unifi_mobility",
   "name": "UniFi Mobility",
-  "codeowners": [],
+  "codeowners": ["@xiaxiaxiamagic"],
   "config_flow": true,
+  "documentation": "https://github.com/xiaxiaxiamagic/unifi-mobility-ha#readme",
   "integration_type": "device",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/xiaxiaxiamagic/unifi-mobility-ha/issues",
   "requirements": [],
   "version": "0.2.0"
 }

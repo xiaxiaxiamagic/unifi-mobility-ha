@@ -26,12 +26,19 @@ TO_REDACT = {
 }
 
 SAFE_DATA_FIELDS: dict[str, Any] = {
-    "low": {"fw": None, "geo_isp": None, "network_source": None, "uptime": None},
+    "low": {
+        "fw": None,
+        "geo_isp": None,
+        "network_source": None,
+        "lte_mode": None,
+        "uptime": None,
+    },
     "medium": {"cpu": None, "memory": None, "total_usage": None},
     "high": {
         "rssi": None,
         "rsrp": None,
         "rsrq": None,
+        "lte_mode": None,
         "rx_channel": None,
         "tx_channel": None,
     },

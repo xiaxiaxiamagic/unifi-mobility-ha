@@ -187,13 +187,17 @@ SENSORS = (
         key="network_type",
         translation_key="network_type",
         icon="mdi:network-strength-4-cog",
-        section="status",
-        value_fn=lambda d: first(
-            d.get("status", {}).get("lte", {}),
-            "network_type",
-            "rat",
-            "access_technology",
-            "registration_type",
+        value_fn=lambda d: (
+            first(d.get("high"), "lte_mode")
+            or first(d.get("low"), "lte_mode")
+            or first(
+                d.get("status", {}).get("lte", {}),
+                "network_type",
+                "rat",
+                "access_technology",
+                "registration_type",
+                "mode",
+            )
         ),
     ),
     MobilitySensorDescription(

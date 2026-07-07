@@ -6,6 +6,7 @@
       "fw": "1.17.11",
       "geo_isp": "Example Mobile",
       "network_source": "LTE",
+      "lte_mode": "LTE",
       "iccid": "REDACTED"
     },
     "medium": {
@@ -17,6 +18,7 @@
       "rssi": -61,
       "rsrp": -88,
       "rsrq": -10,
+      "lte_mode": "LTE",
       "rx_channel": 1300,
       "tx_channel": 19300
     },

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.1
+
+- Read the cellular network type from the `lte_mode` field exposed by
+  UMR-Industrial firmware, with fallbacks for legacy nested fields.
+- 修复 UMR-Industrial 上“蜂窝网络制式”不可用的问题。
+
 ## v0.6.0
 
 - Always close temporary portal sessions used by setup, reauthentication, and

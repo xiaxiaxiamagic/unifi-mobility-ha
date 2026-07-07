@@ -122,7 +122,7 @@ class UnifiMobilityApi:
     async def async_call(
         self, method: str, params: dict[str, Any] | None = None
     ) -> Any:
-        """Call a read-only uimqtt method, renewing the session once if needed."""
+        """Call a uimqtt method, renewing the session once if needed."""
         async with self._call_guard():
             if self._token is None:
                 async with self._login_lock:

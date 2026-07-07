@@ -1,7 +1,7 @@
 """Constants for the UniFi Mobility integration."""
 
 DOMAIN = "unifi_mobility"
-PLATFORMS = ["binary_sensor", "button", "sensor"]
+PLATFORMS = ["binary_sensor", "button", "select", "sensor", "switch"]
 
 ENTITY_KEYS = {
     "binary_sensor": (
@@ -11,7 +11,8 @@ ENTITY_KEYS = {
         "activated",
         "poe_passthrough",
     ),
-    "button": ("refresh", "reconnect"),
+    "button": ("refresh", "reconnect", "restart"),
+    "select": ("network_mode", "lte_band_preference", "sim_profile_source"),
     "sensor": (
         "firmware",
         "operator",
@@ -41,6 +42,7 @@ ENTITY_KEYS = {
         "data_usage_percent",
         "days_until_billing",
     ),
+    "switch": ("locate", "poe_passthrough_control"),
 }
 
 CONF_VERIFY_SSL = "verify_ssl"
@@ -58,7 +60,15 @@ RPC_INFO_HIGH = "InfoHighDump"
 RPC_INFO_CLIENT = "InfoClientDump"
 RPC_DEVICE_INFO = "GetDeviceInfo"
 RPC_DEVICE_STATUS = "GetDeviceStatus"
+RPC_ACTION = "Action"
+RPC_ACTION_CHECK = "ActionCheck"
+RPC_RADIO_CAPABILITY = "GetRadioCapability"
+RPC_RADIO_PREFERENCE = "GetRadioPreference"
+RPC_RADIO_PREFERENCE_SET = "SetRadioPreference"
+RPC_SIM_PROFILE = "GetSimProfile"
+RPC_SIM_PROFILE_SET = "SetSimProfile"
 RPC_SHADOW = "ShadowReadLocal"
+RPC_SHADOW_WRITE = "ShadowWriteLocal"
 
 SHADOW_NETWORKS = "networks"
 SHADOW_POWERS = "powers"

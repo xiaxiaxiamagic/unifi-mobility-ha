@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0
+
+- Add router restart and locate controls backed by the local portal Action API.
+- Add a PoE passthrough switch using the firmware shadow-write API.
+- Add cellular mode, supported LTE band, and SIM profile source selects.
+- Discover writable capabilities read-only and serialize every control request before
+  refreshing state.
+- 新增路由器重启、定位灯、PoE 直通、蜂窝模式、LTE 频段和 SIM 配置来源控制。
+
 ## v0.6.1
 
 - Read the cellular network type from the `lte_mode` field exposed by

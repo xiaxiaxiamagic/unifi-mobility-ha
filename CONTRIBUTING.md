@@ -11,8 +11,10 @@ ruff check custom_components tests
 pytest
 ```
 
-Keep router operations read-only unless a change has an explicit safety and rollback
-design. Add tests for every new firmware field mapping or API behavior.
+Keep polling operations read-only. Writable controls require explicit user intent,
+firmware capability checks, serialized calls, refreshed state, and focused tests.
+Never add factory reset, credential, SIM PIN, or firmware-write controls without a
+separate safety and rollback design. Add tests for every new field or API behavior.
 
 ## Firmware compatibility samples
 

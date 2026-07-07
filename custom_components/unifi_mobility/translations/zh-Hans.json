@@ -17,7 +17,13 @@
   },
   "entity": {
     "binary_sensor": {"connectivity": {"name": "互联网连接"}, "sim_present": {"name": "SIM 卡已插入"}, "pin_locked": {"name": "SIM PIN 已锁定"}, "activated": {"name": "设备已激活"}, "poe_passthrough": {"name": "PoE 透传"}},
-    "button": {"refresh": {"name": "立即刷新"}, "reconnect": {"name": "重新连接本地会话"}},
+    "button": {"refresh": {"name": "立即刷新"}, "reconnect": {"name": "重新连接本地会话"}, "restart": {"name": "重启路由器"}},
+    "switch": {"locate": {"name": "定位指示灯"}, "poe_passthrough_control": {"name": "PoE 直通控制"}},
+    "select": {
+      "network_mode": {"name": "蜂窝网络模式", "state": {"automatic": "LTE/UMTS 自动", "lte_only": "仅 LTE", "umts_only": "仅 UMTS"}},
+      "lte_band_preference": {"name": "LTE 首选频段", "state": {"AUTO": "自动"}},
+      "sim_profile_source": {"name": "SIM 配置来源", "state": {"automatic": "运营商自动配置", "custom": "当前自定义 APN"}}
+    },
     "sensor": {
       "firmware": {"name": "固件版本"}, "operator": {"name": "运营商"}, "network_source": {"name": "网络来源"}, "lte_band": {"name": "LTE 频段"},
       "rssi": {"name": "RSSI"}, "rsrp": {"name": "RSRP"}, "rsrq": {"name": "RSRQ"}, "signal_quality": {"name": "信号质量", "state": {"excellent": "优秀", "good": "良好", "fair": "一般", "poor": "较差", "no_signal": "无信号"}},

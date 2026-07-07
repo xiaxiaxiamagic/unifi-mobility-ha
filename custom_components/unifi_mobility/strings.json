@@ -17,7 +17,13 @@
   },
   "entity": {
     "binary_sensor": {"connectivity": {"name": "Internet connectivity"}, "sim_present": {"name": "SIM present"}, "pin_locked": {"name": "SIM PIN locked"}, "activated": {"name": "Activated"}, "poe_passthrough": {"name": "PoE passthrough"}},
-    "button": {"refresh": {"name": "Refresh now"}, "reconnect": {"name": "Reconnect local session"}},
+    "button": {"refresh": {"name": "Refresh now"}, "reconnect": {"name": "Reconnect local session"}, "restart": {"name": "Restart router"}},
+    "switch": {"locate": {"name": "Locate indicator"}, "poe_passthrough_control": {"name": "PoE passthrough control"}},
+    "select": {
+      "network_mode": {"name": "Cellular network mode", "state": {"automatic": "LTE/UMTS automatic", "lte_only": "LTE only", "umts_only": "UMTS only"}},
+      "lte_band_preference": {"name": "LTE band preference", "state": {"AUTO": "Automatic"}},
+      "sim_profile_source": {"name": "SIM profile source", "state": {"automatic": "Carrier automatic", "custom": "Current custom APN"}}
+    },
     "sensor": {
       "firmware": {"name": "Firmware"}, "operator": {"name": "Operator"}, "network_source": {"name": "Network source"}, "lte_band": {"name": "LTE band"},
       "rssi": {"name": "RSSI"}, "rsrp": {"name": "RSRP"}, "rsrq": {"name": "RSRQ"}, "signal_quality": {"name": "Signal quality", "state": {"excellent": "Excellent", "good": "Good", "fair": "Fair", "poor": "Poor", "no_signal": "No signal"}},

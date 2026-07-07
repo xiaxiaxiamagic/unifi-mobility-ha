@@ -34,6 +34,12 @@ BUTTONS = (
         entity_category=EntityCategory.DIAGNOSTIC,
         action="reconnect",
     ),
+    MobilityButtonDescription(
+        key="restart",
+        translation_key="restart",
+        icon="mdi:restart-alert",
+        action="restart",
+    ),
 )
 
 
@@ -62,7 +68,9 @@ class MobilityButton(UnifiMobilityEntity, ButtonEntity):
         )
 
     async def async_press(self) -> None:
-        if self.entity_description.action == "reconnect":
+        if self.entity_description.action == "restart":
+            await self.coordinator.async_restart_device()
+        elif self.entity_description.action == "reconnect":
             await self.coordinator.async_reconnect()
         else:
             await self.coordinator.async_request_refresh()

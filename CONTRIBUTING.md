@@ -13,3 +13,11 @@ pytest
 
 Keep router operations read-only unless a change has an explicit safety and rollback
 design. Add tests for every new firmware field mapping or API behavior.
+
+## Firmware compatibility samples
+
+Place anonymized samples in `tests/fixtures/` and add a focused test in
+`tests/test_firmware_fixtures.py`. Keep the response structure intact, but replace
+all passwords, session tokens, IP and MAC addresses, IMEI, ICCID, SSIDs, carrier
+account details, and client identifiers with `REDACTED`. Include the router model
+and firmware version as fixture metadata.

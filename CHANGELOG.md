@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.0
+
+- Add polling health, retry state, section freshness, and last-success details to
+  redacted diagnostics.
+- Add an anonymized UMR-Industrial-EU `1.17.11` compatibility fixture and tests.
+- Normalize and validate router origins with IPv4, host name, port, and IPv6
+  support.
+- Prepare HACS default-listing metadata, ZIP release discovery, compatibility
+  documentation, scheduled validation, and the one-click HACS link.
+- 诊断信息新增轮询健康状态，并完善固件兼容样本、IPv6 地址及 HACS 收录准备。
+
 ## v0.4.2
 
 - Make legacy entity ID migration reliable by reading entities directly from the

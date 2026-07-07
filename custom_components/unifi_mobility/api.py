@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from ipaddress import ip_address
 from itertools import count
 from typing import Any
 
@@ -13,6 +14,7 @@ from aiohttp import (
     ClientSession,
     ClientTimeout,
 )
+from yarl import URL
 
 
 class UnifiMobilityError(Exception):
@@ -39,6 +41,31 @@ class UnifiMobilityRpcError(UnifiMobilityError):
         self.code = code
 
 
+def normalize_host(host: str) -> str:
+    """Return a validated HTTP(S) origin, including bracketed IPv6 hosts."""
+    raw = host.strip().rstrip("/")
+    if not raw:
+        raise ValueError("Host cannot be empty")
+    if "://" not in raw:
+        try:
+            address = ip_address(raw)
+        except ValueError:
+            pass
+        else:
+            if address.version == 6:
+                raw = f"[{raw}]"
+        raw = f"https://{raw}"
+    try:
+        url = URL(raw)
+        if url.scheme not in {"http", "https"} or url.host is None:
+            raise ValueError
+        if url.user is not None or url.password is not None:
+            raise ValueError
+        return str(url.origin())
+    except (TypeError, ValueError) as err:
+        raise ValueError("Host must be a valid HTTP(S) address") from err
+
+
 class UnifiMobilityApi:
     """Communicate with the UMR Local Portal API."""
 
@@ -50,9 +77,7 @@ class UnifiMobilityApi:
         verify_ssl: bool = False,
     ) -> None:
         self._session = session
-        self._host = host.strip().rstrip("/")
-        if not self._host.startswith(("http://", "https://")):
-            self._host = f"https://{self._host}"
+        self._host = normalize_host(host)
         self._password = password
         self._verify_ssl = verify_ssl
         self._token: str | None = None
@@ -60,6 +85,11 @@ class UnifiMobilityApi:
         self._timeout = ClientTimeout(total=12)
         self._request_ids = count(1)
         self._request_semaphore = asyncio.Semaphore(3)
+
+    @property
+    def host(self) -> str:
+        """Return the normalized device origin."""
+        return self._host
 
     async def async_login(self) -> None:
         """Create a local portal session."""

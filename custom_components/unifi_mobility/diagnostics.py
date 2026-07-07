@@ -52,5 +52,7 @@ async def async_get_config_entry_diagnostics(
             {"data": dict(entry.data), "options": dict(entry.options)}, TO_REDACT
         ),
         "last_update_success": coordinator.last_update_success,
+        "last_update_success_time": coordinator.last_success_time,
+        "polling_health": coordinator.diagnostic_data(),
         "data": _redact_nested(coordinator.data),
     }

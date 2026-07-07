@@ -1,0 +1,57 @@
+{
+  "model": "UMR-Industrial-EU",
+  "firmware": "1.17.11",
+  "responses": {
+    "low": {
+      "fw": "1.17.11",
+      "geo_isp": "Example Mobile",
+      "network_source": "LTE",
+      "iccid": "REDACTED"
+    },
+    "medium": {
+      "cpu": 12,
+      "memory": 41,
+      "total_usage": "250000000"
+    },
+    "high": {
+      "rssi": -61,
+      "rsrp": -88,
+      "rsrq": -10,
+      "rx_channel": 1300,
+      "tx_channel": 19300
+    },
+    "status": {
+      "online": true,
+      "activated": true,
+      "lte": {
+        "band": "B3",
+        "network_type": "LTE",
+        "sim_present": true,
+        "pin_lock": false
+      }
+    },
+    "device": {
+      "model_name": "UMR-Industrial-EU",
+      "imei": "REDACTED",
+      "uptime": 86400,
+      "wan_ip": "REDACTED",
+      "wan_ipv6": "REDACTED",
+      "lan_ip": "REDACTED",
+      "lte_model_name": "Example LTE Modem"
+    },
+    "networks": {
+      "data_usage": {
+        "limit": 1000000000,
+        "billing_cycle_date": 15
+      }
+    },
+    "powers": {
+      "poe": true
+    },
+    "clients": {
+      "REDACTED": {
+        "name": "REDACTED"
+      }
+    }
+  }
+}

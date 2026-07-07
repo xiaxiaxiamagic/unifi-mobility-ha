@@ -45,13 +45,13 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             host = user_input[CONF_HOST].strip().rstrip("/")
-            api = UnifiMobilityApi(
-                async_get_clientsession(self.hass),
-                host,
-                user_input[CONF_PASSWORD],
-                user_input[CONF_VERIFY_SSL],
-            )
             try:
+                api = UnifiMobilityApi(
+                    async_get_clientsession(self.hass),
+                    host,
+                    user_input[CONF_PASSWORD],
+                    user_input[CONF_VERIFY_SSL],
+                )
                 await api.async_login()
                 low = await api.async_call(RPC_INFO_LOW)
                 try:
@@ -62,7 +62,7 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:
                 errors["base"] = "invalid_ssl"
-            except UnifiMobilityConnectionError:
+            except (UnifiMobilityConnectionError, ValueError):
                 errors["base"] = "cannot_connect"
             except UnifiMobilityError:
                 errors["base"] = "unknown"
@@ -107,19 +107,19 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             data = {**self._reauth_entry.data, CONF_PASSWORD: user_input[CONF_PASSWORD]}
-            api = UnifiMobilityApi(
-                async_get_clientsession(self.hass),
-                data[CONF_HOST],
-                data[CONF_PASSWORD],
-                data.get(CONF_VERIFY_SSL, False),
-            )
             try:
+                api = UnifiMobilityApi(
+                    async_get_clientsession(self.hass),
+                    data[CONF_HOST],
+                    data[CONF_PASSWORD],
+                    data.get(CONF_VERIFY_SSL, False),
+                )
                 await api.async_login()
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:
                 errors["base"] = "invalid_ssl"
-            except UnifiMobilityError:
+            except (UnifiMobilityError, ValueError):
                 errors["base"] = "cannot_connect"
             else:
                 self.hass.config_entries.async_update_entry(
@@ -157,19 +157,19 @@ class UnifiMobilityOptionsFlow(config_entries.OptionsFlow):
                 CONF_PASSWORD: user_input[CONF_PASSWORD],
                 CONF_VERIFY_SSL: user_input[CONF_VERIFY_SSL],
             }
-            api = UnifiMobilityApi(
-                async_get_clientsession(self.hass),
-                data[CONF_HOST],
-                data[CONF_PASSWORD],
-                data[CONF_VERIFY_SSL],
-            )
             try:
+                api = UnifiMobilityApi(
+                    async_get_clientsession(self.hass),
+                    data[CONF_HOST],
+                    data[CONF_PASSWORD],
+                    data[CONF_VERIFY_SSL],
+                )
                 await api.async_login()
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:
                 errors["base"] = "invalid_ssl"
-            except UnifiMobilityError:
+            except (UnifiMobilityError, ValueError):
                 errors["base"] = "cannot_connect"
             else:
                 self.hass.config_entries.async_update_entry(self.entry, data=data)

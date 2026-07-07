@@ -7,6 +7,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
 
+from .api import normalize_host
 from .const import DOMAIN
 from .coordinator import UnifiMobilityCoordinator
 
@@ -29,11 +30,7 @@ class UnifiMobilityEntity(CoordinatorEntity[UnifiMobilityCoordinator]):
             model=device.get("model_name") or "UniFi Mobile Router",
             serial_number=device.get("imei"),
             sw_version=coordinator.data.get("low", {}).get("fw"),
-            configuration_url=(
-                entry.data["host"]
-                if entry.data["host"].startswith(("http://", "https://"))
-                else f"https://{entry.data['host']}"
-            ),
+            configuration_url=normalize_host(entry.data["host"]),
         )
         self._identity = str(identity)
         self._attr_suggested_object_id = slugify(entry.title)

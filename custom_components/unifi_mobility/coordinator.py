@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from random import uniform
 from time import monotonic
 from typing import Any
@@ -56,6 +56,7 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._section_updated: dict[str, float] = {}
         self._method_failures: dict[str, int] = {}
         self._failure_count = 0
+        self.last_success_time: datetime | None = None
         interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         self._base_interval = interval
         super().__init__(
@@ -77,6 +78,23 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         slow = section in {"device", "networks", "powers", "clients"}
         max_age = interval * (multiplier * 2 + 1 if slow else 3)
         return monotonic() - self._section_updated[section] <= max_age
+
+    def diagnostic_data(self) -> dict[str, Any]:
+        """Return non-sensitive polling health information for diagnostics."""
+        now = monotonic()
+        return {
+            "poll_cycle": self._cycle,
+            "base_interval_seconds": self._base_interval,
+            "current_interval_seconds": (
+                self.update_interval.total_seconds() if self.update_interval else None
+            ),
+            "consecutive_failures": self._failure_count,
+            "rpc_failure_counts": dict(self._method_failures),
+            "section_age_seconds": {
+                section: round(max(now - updated, 0), 1)
+                for section, updated in self._section_updated.items()
+            },
+        }
 
     async def async_reconnect(self) -> None:
         """Safely replace the local read-only API session."""
@@ -179,4 +197,5 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             seconds=self._base_interval + uniform(0, self._base_interval * 0.1)
         )
         ir.async_delete_issue(self.hass, DOMAIN, "invalid_ssl")
+        self.last_success_time = datetime.now(UTC)
         return data

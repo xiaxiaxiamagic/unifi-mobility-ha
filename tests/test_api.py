@@ -10,6 +10,7 @@ from custom_components.unifi_mobility.api import (
     UnifiMobilityApi,
     UnifiMobilityAuthError,
     UnifiMobilitySslError,
+    normalize_host,
 )
 
 
@@ -106,3 +107,22 @@ async def test_certificate_error_is_classified() -> None:
     api = UnifiMobilityApi(session, "192.0.2.1", "secret", verify_ssl=True)
     with pytest.raises(UnifiMobilitySslError):
         await api._request("/rpc", "Status", {})
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("192.168.105.1", "https://192.168.105.1"),
+        ("http://router.local:8080/path", "http://router.local:8080"),
+        ("fd00::105", "https://[fd00::105]"),
+        ("https://[fd00::105]:8443/", "https://[fd00::105]:8443"),
+    ],
+)
+def test_normalize_host(raw: str, expected: str) -> None:
+    assert normalize_host(raw) == expected
+
+
+@pytest.mark.parametrize("raw", ["", "ftp://router.local", "https://user@router"])
+def test_normalize_host_rejects_invalid_values(raw: str) -> None:
+    with pytest.raises(ValueError):
+        normalize_host(raw)

@@ -1,5 +1,6 @@
 """Focused tests for the UMR JSON-RPC client."""
 
+import asyncio
 import ssl
 from unittest.mock import AsyncMock, MagicMock
 
@@ -73,6 +74,35 @@ async def test_logout_clears_token_on_failure() -> None:
     api._request = AsyncMock(side_effect=UnifiMobilityAuthError("expired"))
     await api.async_logout()
     assert api._token is None
+
+
+@pytest.mark.asyncio
+async def test_reconnect_waits_for_in_flight_calls() -> None:
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def request(_path, method, _params, **_kwargs):
+        if method == "Status":
+            started.set()
+            await release.wait()
+            return {"ok": True}
+        if method == "login":
+            return {"ubus_rpc_session": "new"}
+        return {}
+
+    api = UnifiMobilityApi(MagicMock(), "192.0.2.1", "secret")
+    api._token = "old"
+    api._request = AsyncMock(side_effect=request)
+    call_task = asyncio.create_task(api.async_call("Status"))
+    await started.wait()
+    reconnect_task = asyncio.create_task(api.async_reconnect())
+    await asyncio.sleep(0)
+    assert not reconnect_task.done()
+
+    release.set()
+    assert await call_task == {"ok": True}
+    await reconnect_task
+    assert api._token == "new"
 
 
 @pytest.mark.asyncio

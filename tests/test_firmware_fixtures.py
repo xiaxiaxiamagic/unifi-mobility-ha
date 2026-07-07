@@ -31,3 +31,20 @@ def test_umr_industrial_eu_1_17_11_sample() -> None:
         "activated": True,
         "poe_passthrough": True,
     }
+
+
+def test_umr_legacy_field_aliases() -> None:
+    sample = json.loads(
+        (FIXTURES / "umr_legacy_aliases.json").read_text(encoding="utf-8")
+    )
+    data = sample["responses"]
+    sensor_values = {item.key: item.value_fn(data) for item in SENSORS}
+    binary_values = {item.key: item.value_fn(data) for item in BINARY_SENSORS}
+
+    assert sample["source"] == "synthetic_compatibility_case"
+    assert sensor_values["data_usage"] == 400
+    assert sensor_values["data_limit"] == 1000
+    assert sensor_values["data_remaining"] == 600
+    assert sensor_values["network_type"] == "LTE"
+    assert binary_values["connectivity"] is True
+    assert binary_values["poe_passthrough"] is False

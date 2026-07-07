@@ -31,6 +31,24 @@ from .const import (
 )
 
 
+async def _async_test_api(
+    api: UnifiMobilityApi, *, probe: bool
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Test credentials and always release the temporary portal session."""
+    try:
+        await api.async_login()
+        if not probe:
+            return {}, {}
+        low = await api.async_call(RPC_INFO_LOW)
+        try:
+            device = await api.async_call(RPC_DEVICE_INFO)
+        except UnifiMobilityError:
+            device = {}
+        return low, device
+    finally:
+        await api.async_logout()
+
+
 class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Configure a local UMR."""
 
@@ -52,12 +70,7 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_PASSWORD],
                     user_input[CONF_VERIFY_SSL],
                 )
-                await api.async_login()
-                low = await api.async_call(RPC_INFO_LOW)
-                try:
-                    device = await api.async_call(RPC_DEVICE_INFO)
-                except UnifiMobilityError:
-                    device = {}
+                low, device = await _async_test_api(api, probe=True)
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:
@@ -114,7 +127,7 @@ class UnifiMobilityConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data[CONF_PASSWORD],
                     data.get(CONF_VERIFY_SSL, False),
                 )
-                await api.async_login()
+                await _async_test_api(api, probe=False)
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:
@@ -164,7 +177,7 @@ class UnifiMobilityOptionsFlow(config_entries.OptionsFlow):
                     data[CONF_PASSWORD],
                     data[CONF_VERIFY_SSL],
                 )
-                await api.async_login()
+                await _async_test_api(api, probe=False)
             except UnifiMobilityAuthError:
                 errors["base"] = "invalid_auth"
             except UnifiMobilitySslError:

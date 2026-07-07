@@ -98,8 +98,7 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def async_reconnect(self) -> None:
         """Safely replace the local read-only API session."""
-        await self.api.async_logout()
-        await self.api.async_login()
+        await self.api.async_reconnect()
         await self.async_request_refresh()
 
     async def _async_update_data(self) -> dict[str, Any]:

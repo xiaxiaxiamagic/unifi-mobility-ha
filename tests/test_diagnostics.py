@@ -3,7 +3,10 @@
 from datetime import timedelta
 
 from custom_components.unifi_mobility.coordinator import UnifiMobilityCoordinator
-from custom_components.unifi_mobility.diagnostics import _redact_nested
+from custom_components.unifi_mobility.diagnostics import (
+    _redact_nested,
+    _safe_diagnostics_data,
+)
 
 
 def test_sensitive_values_are_redacted() -> None:
@@ -42,4 +45,18 @@ def test_polling_health_diagnostics(monkeypatch) -> None:
         "consecutive_failures": 2,
         "rpc_failure_counts": {"InfoHighDump": 3},
         "section_age_seconds": {"low": 10.0},
+    }
+
+
+def test_diagnostics_use_a_safe_field_allowlist() -> None:
+    data = {
+        "low": {"fw": "1.2.3", "new_secret": "must-not-leak"},
+        "device": {"model_name": "UMR", "serial": "secret"},
+        "clients": [{"name": "phone", "mac": "secret"}],
+        "unknown_section": {"password": "secret"},
+    }
+    assert _safe_diagnostics_data(data) == {
+        "low": {"fw": "1.2.3"},
+        "device": {"model_name": "UMR"},
+        "clients": {"count": 1},
     }

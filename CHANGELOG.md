@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.0
+
+- Always close temporary portal sessions used by setup, reauthentication, and
+  options flows.
+- Make reconnect and logout wait for in-flight RPC calls without disabling normal
+  concurrent polling.
+- Replace firmware-data diagnostic redaction with an explicit safe-field allowlist.
+- Add a synthetic legacy-field UMR fixture and compatibility regression tests.
+- Pin third-party GitHub Actions to commit SHAs and move first-party JavaScript
+  actions to Node.js 24 releases.
+- 配置会话自动清理，并增强重连并发安全、诊断隐私、固件兼容测试和 CI 供应链安全。
+
 ## v0.5.1
 
 - Release after successful HACS and Hassfest validation for default repository

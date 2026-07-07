@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from ipaddress import ip_address
 from itertools import count
 from typing import Any
@@ -82,6 +84,9 @@ class UnifiMobilityApi:
         self._verify_ssl = verify_ssl
         self._token: str | None = None
         self._login_lock = asyncio.Lock()
+        self._session_condition = asyncio.Condition()
+        self._active_calls = 0
+        self._session_changing = False
         self._timeout = ClientTimeout(total=12)
         self._request_ids = count(1)
         self._request_semaphore = asyncio.Semaphore(3)
@@ -93,8 +98,9 @@ class UnifiMobilityApi:
 
     async def async_login(self) -> None:
         """Create a local portal session."""
-        async with self._login_lock:
-            await self._async_login_unlocked()
+        async with self._session_change_guard():
+            async with self._login_lock:
+                await self._async_login_unlocked()
 
     async def _async_login_unlocked(self) -> None:
         """Create a session while the login lock is held."""
@@ -117,23 +123,36 @@ class UnifiMobilityApi:
         self, method: str, params: dict[str, Any] | None = None
     ) -> Any:
         """Call a read-only uimqtt method, renewing the session once if needed."""
-        if self._token is None:
-            async with self._login_lock:
-                if self._token is None:
-                    await self._async_login_unlocked()
-        token = self._token
-        try:
-            return await self._request("/ubus/call/uimqtt", method, params or {})
-        except UnifiMobilityAuthError:
-            async with self._login_lock:
-                # Other parallel calls may already have refreshed this session.
-                if self._token == token:
-                    self._token = None
-                    await self._async_login_unlocked()
-            return await self._request("/ubus/call/uimqtt", method, params or {})
+        async with self._call_guard():
+            if self._token is None:
+                async with self._login_lock:
+                    if self._token is None:
+                        await self._async_login_unlocked()
+            token = self._token
+            try:
+                return await self._request("/ubus/call/uimqtt", method, params or {})
+            except UnifiMobilityAuthError:
+                async with self._login_lock:
+                    # Other parallel calls may already have refreshed this session.
+                    if self._token == token:
+                        self._token = None
+                        await self._async_login_unlocked()
+                return await self._request("/ubus/call/uimqtt", method, params or {})
 
     async def async_logout(self) -> None:
         """Destroy the current local session when possible."""
+        async with self._session_change_guard():
+            await self._async_logout_unlocked()
+
+    async def async_reconnect(self) -> None:
+        """Replace the session after all in-flight calls have completed."""
+        async with self._session_change_guard():
+            await self._async_logout_unlocked()
+            async with self._login_lock:
+                await self._async_login_unlocked()
+
+    async def _async_logout_unlocked(self) -> None:
+        """Destroy the current session while session changes are exclusive."""
         if self._token is None:
             return
         try:
@@ -142,6 +161,33 @@ class UnifiMobilityApi:
             pass
         finally:
             self._token = None
+
+    @asynccontextmanager
+    async def _call_guard(self) -> AsyncIterator[None]:
+        """Allow concurrent calls while excluding reconnect and logout."""
+        async with self._session_condition:
+            await self._session_condition.wait_for(lambda: not self._session_changing)
+            self._active_calls += 1
+        try:
+            yield
+        finally:
+            async with self._session_condition:
+                self._active_calls -= 1
+                self._session_condition.notify_all()
+
+    @asynccontextmanager
+    async def _session_change_guard(self) -> AsyncIterator[None]:
+        """Wait for active calls and block new calls during session changes."""
+        async with self._session_condition:
+            await self._session_condition.wait_for(lambda: not self._session_changing)
+            self._session_changing = True
+            await self._session_condition.wait_for(lambda: self._active_calls == 0)
+        try:
+            yield
+        finally:
+            async with self._session_condition:
+                self._session_changing = False
+                self._session_condition.notify_all()
 
     async def _request(
         self,

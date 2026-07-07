@@ -1,0 +1,46 @@
+{
+  "model": "UMR",
+  "firmware": "legacy-alias-compatibility",
+  "source": "synthetic_compatibility_case",
+  "responses": {
+    "low": {
+      "fw": "legacy",
+      "geo_isp": "Example Carrier",
+      "network_source": "cellular"
+    },
+    "medium": {
+      "cpu": "9",
+      "memory": "33",
+      "data_usage": "400"
+    },
+    "high": {
+      "rssi": "-70",
+      "rsrp": "-95",
+      "rsrq": "-12"
+    },
+    "status": {
+      "online": "connected",
+      "activated": 1,
+      "lte": {
+        "band": "B20",
+        "rat": "LTE",
+        "sim_present": 1,
+        "pin_lock": 0
+      }
+    },
+    "device": {
+      "model_name": "UMR",
+      "uptime": 120
+    },
+    "networks": {
+      "data_usage": {
+        "quota": "1000",
+        "billing_cycle_date": 1
+      }
+    },
+    "powers": {
+      "poe": "off"
+    },
+    "clients": {}
+  }
+}

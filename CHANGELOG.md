@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.1
+
+- Release after successful HACS and Hassfest validation for default repository
+  submission.
+- 在 HACS 与 Hassfest 校验成功后发布，用于申请加入 HACS 默认仓库。
+
 ## v0.5.0
 
 - Add polling health, retry state, section freshness, and last-success details to

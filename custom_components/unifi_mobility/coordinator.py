@@ -156,7 +156,7 @@ class UnifiMobilityCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def async_set_lte_band(self, option: str) -> None:
         """Select an LTE band while preserving the cellular mode."""
-        band = option.removeprefix("B") if option != "AUTO" else "AUTO"
+        band = option.removeprefix("B") if option != "auto" else "AUTO"
         capability = self._cache.get("radio_capability", {})
         supported = {str(value) for value in capability.get("lte_band", [])}
         if band != "AUTO" and band not in supported:

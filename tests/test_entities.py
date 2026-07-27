@@ -104,7 +104,7 @@ def test_control_entity_states() -> None:
     sim_source.entity_description = SELECTS[2]
     sim_source.coordinator = coordinator
     assert network_mode.current_option == "automatic"
-    assert lte_band.options == ["AUTO", "B1", "B3", "B20"]
+    assert lte_band.options == ["auto", "B1", "B3", "B20"]
     assert lte_band.current_option == "B3"
     assert sim_source.current_option == "custom"
 
@@ -139,6 +139,11 @@ async def test_control_rpc_payloads() -> None:
         "SetRadioPreference",
         {"mode": ["lte", "umts"], "lte_band": ["3"], "band": ["AUTO"]},
     )
+    await coordinator.async_set_lte_band("auto")
+    coordinator.api.async_call.assert_awaited_with(
+        "SetRadioPreference",
+        {"mode": ["lte", "umts"], "lte_band": ["AUTO"], "band": ["AUTO"]},
+    )
     await coordinator.async_set_sim_profile_source("automatic")
     coordinator.api.async_call.assert_awaited_with(
         "SetSimProfile",
@@ -148,4 +153,4 @@ async def test_control_rpc_payloads() -> None:
             "apn_configuration_source": 1,
         },
     )
-    assert coordinator.async_request_refresh.await_count == 3
+    assert coordinator.async_request_refresh.await_count == 4

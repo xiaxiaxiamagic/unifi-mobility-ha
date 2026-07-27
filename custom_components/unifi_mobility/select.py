@@ -81,7 +81,7 @@ class MobilitySelect(UnifiMobilityEntity, SelectEntity):
         if self.entity_description.control != "lte_band":
             return list(self.entity_description.options)
         bands = self.coordinator.data.get("radio_capability", {}).get("lte_band", [])
-        return ["AUTO", *(f"B{band}" for band in bands)]
+        return ["auto", *(f"B{band}" for band in bands)]
 
     @property
     def current_option(self) -> str | None:
@@ -102,7 +102,7 @@ class MobilitySelect(UnifiMobilityEntity, SelectEntity):
                 "lte_band", []
             )
             value = str(values[0]) if values else "AUTO"
-            return "AUTO" if value.upper() == "AUTO" else f"B{int(value)}"
+            return "auto" if value.upper() == "AUTO" else f"B{int(value)}"
         profile = self.coordinator.data.get("sim_profile", {})
         current, default = profile.get("current"), profile.get("default")
         if not isinstance(current, dict) or not isinstance(default, dict):

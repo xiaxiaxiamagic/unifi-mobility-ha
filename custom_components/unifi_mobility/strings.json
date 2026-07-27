@@ -21,7 +21,7 @@
     "switch": {"locate": {"name": "Locate indicator"}, "poe_passthrough_control": {"name": "PoE passthrough control"}},
     "select": {
       "network_mode": {"name": "Cellular network mode", "state": {"automatic": "LTE/UMTS automatic", "lte_only": "LTE only", "umts_only": "UMTS only"}},
-      "lte_band_preference": {"name": "LTE band preference", "state": {"AUTO": "Automatic"}},
+      "lte_band_preference": {"name": "LTE band preference", "state": {"auto": "Automatic"}},
       "sim_profile_source": {"name": "SIM profile source", "state": {"automatic": "Carrier automatic", "custom": "Current custom APN"}}
     },
     "sensor": {

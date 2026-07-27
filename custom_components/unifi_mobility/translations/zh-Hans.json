@@ -21,7 +21,7 @@
     "switch": {"locate": {"name": "定位指示灯"}, "poe_passthrough_control": {"name": "PoE 直通控制"}},
     "select": {
       "network_mode": {"name": "蜂窝网络模式", "state": {"automatic": "LTE/UMTS 自动", "lte_only": "仅 LTE", "umts_only": "仅 UMTS"}},
-      "lte_band_preference": {"name": "LTE 首选频段", "state": {"AUTO": "自动"}},
+      "lte_band_preference": {"name": "LTE 首选频段", "state": {"auto": "自动"}},
       "sim_profile_source": {"name": "SIM 配置来源", "state": {"automatic": "运营商自动配置", "custom": "当前自定义 APN"}}
     },
     "sensor": {

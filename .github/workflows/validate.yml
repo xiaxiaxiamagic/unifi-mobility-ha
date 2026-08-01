@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - uses: home-assistant/actions/hassfest@f4ca6f671bd429efb108c0f2fa0ae8af0215986c
+      - uses: home-assistant/actions/hassfest@ab22029681aa532bfe7de5774a9972d67bfbd2c0
 
   hacs:
     runs-on: ubuntu-latest
